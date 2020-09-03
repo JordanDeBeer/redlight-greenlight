@@ -2,11 +2,11 @@ package game
 
 const (
 	// NumberRedCards is the number of Red cards in a deck.
-	NumberRedCards = 11
+	NumberRedCards = 12
 	// NumberGreenCards is the number of Green cards in a deck.
-	NumberGreenCards = 24
+	NumberGreenCards = 25
 	// NumberDblGreenCards is the number of Double Green cards in a deck.
-	NumberDblGreenCards = 13
+	NumberDblGreenCards = 14
 	// TotalCards is the total number of cards in a deck. Equal to 50 in a typical deck
 	TotalCards = NumberRedCards + NumberGreenCards + NumberDblGreenCards
 
