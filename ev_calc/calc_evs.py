@@ -21,7 +21,7 @@ class BoardState:
     opponent_score: tuple
 
 
-ev_map: Dict[BoardState, int] = {}
+ev_map: Dict[BoardState, float] = {}
 with open("./ev_map.pkl", "rb") as f:
     try:
         ev_map = pickle.load(f)
@@ -65,7 +65,7 @@ def build_constants():
             ev_map[bs] = 0
         # Constants for when there is only red cards left not at the start of your turn
         if bs.score[1] != 0 and bs.spent_green == 25 and bs.spent_double_green == 14:
-            ev_map[bs] = bs.score
+            ev_map[bs] = bs.score[1]
     with open("./ev_map.pkl", "wb") as f:
         pickle.dump(ev_map, f)
 
