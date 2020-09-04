@@ -22,11 +22,7 @@ class BoardState:
 
 
 ev_map: Dict[BoardState, int] = {}
-with open("./ev_map.pkl", "rb") as f:
-    try:
-        ev_map = pickle.load(f)
-    except EOFError:
-        print("no pickled file to load")
+
 
 positions = [i for i in range(0, 16)]  # 17 is a win
 stacks = [i for i in range(0, 16)]
@@ -38,27 +34,39 @@ red_cards = [i for i in reversed(range(0, 13))]
 green_cards = [i for i in reversed(range(0, 26))]
 dbl_green_cards = [i for i in reversed(range(0, 15))]
 
-#for t in product(possible_scores, red_cards, green_cards, dbl_green_cards, possible_scores):
-   #bs = BoardState(t[0],t[1],t[2],t[3],t[4])
-   #if bs in ev_map:
-       #continue
-   ## Deck with no cards is re-shuffled
-   #if bs.spent_red == 12 and bs.spent_green == 25 and bs.spent_double_green==14:
-       #continue
-       ##ev_map[bs] = ev_map[BoardState(bs.score,0,0,0,bs.opponent_score)]
-   ## Constants for wins where there are 0 red cards left and drawing would result in a win
-   ##if bs.spent_red==12 and 1*bs.spent_green +2*bs.spent_double_green >= 17:
-   #if bs.spent_red==12 and 1*(number_green_cards-bs.spent_green)+2*(number_dbl_green_cards-bs.spent_double_green) >= 17:
-       #ev_map[bs] = inf
-   ## Constants for when there is only red cards left at the start of your turn.
-   #if bs.score[1] == 0 and bs.spent_green==25 and bs.spent_double_green==14:
-       #ev_map[bs] = 0
-
-with open("./ev_map.pkl", 'wb') as f:
-   pickle.dump(ev_map, f)
 
 
-def FindEV(bs: BoardState):
+
+def build_constants():
+    with open("./ev_map.pkl", "rb") as f:
+        try:
+            ev_map = pickle.load(f)
+        except EOFError:
+            print("no pickled file to load")
+
+    for t in product(possible_scores, red_cards, green_cards, dbl_green_cards, possible_scores):
+        bs = BoardState(t[0],t[1],t[2],t[3],t[4])
+        if bs in ev_map:
+           continue
+        # Deck with no cards is re-shuffled
+        # This might be bugged?
+        if bs.spent_red == 12 and bs.spent_green == 25 and bs.spent_double_green==14:
+           continue
+           ##ev_map[bs] = ev_map[BoardState(bs.score,0,0,0,bs.opponent_score)]
+        # Constants for wins where there are 0 red cards left and drawing would result in a win
+        if bs.spent_red==12 and 1*(number_green_cards-bs.spent_green)+2*(number_dbl_green_cards-bs.spent_double_green) >= 17:
+           ev_map[bs] = inf
+        # Constants for when there is only red cards left at the start of your turn.
+        if bs.score[1] == 0 and bs.spent_green==25 and bs.spent_double_green==14:
+           ev_map[bs] = 0
+        # Constants for when there is only red cards left not at the start of your turn
+        if bs.score[1] != 0 and bs.spent_green==25 and bs.spent_double_green==14:
+            ev_map[bs] = bs.score
+    with open("./ev_map.pkl", 'wb') as f:
+       pickle.dump(ev_map, f)
+
+
+def find_ev(bs: BoardState):
     # What is our for loop here? We need to start at end nodes in ev_map
     if bs not in ev_map:
         print("bs not in map: ", bs)
@@ -112,8 +120,12 @@ def FindEV(bs: BoardState):
         print("bs in map ", bs)
 
 
-for t in product(possible_scores, red_cards, green_cards, dbl_green_cards, possible_scores):
-    bs = BoardState(t[0],t[1],t[2],t[3],t[4])
-    if bs not in ev_map:
-       FindEV(bs)
-    else:
+build_constants()
+
+for bs in ev_map.items():
+    ## Add score.position increase
+    while bs.score[0] + bs.score[1] <= 17:
+        i = 1
+        upper_bs = BoardState(tuple(bs.score[0]+i),bs.score[1], bs.spent_red,bs.spent_green,bs.spent_double_green,bs.opponent_score)
+        find_ev(upper_bs)
+        i+=1
