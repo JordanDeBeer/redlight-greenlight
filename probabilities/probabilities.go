@@ -19,13 +19,10 @@ func countSpentCards(spentDeck []game.Card, cardColor game.Card) (count int) {
 	return count
 }
 
-func newEvMap()
-
 func FindEv(count, stack int, spentDeck []game.Card) (ev float32) {
 	// Seed some initial values to get started.
 	// Single red card left.
-	EVMap[fmt.Sprintf("%v-%v-%v-%v", 0,game.NumberRedCards,game.GreenCard,game.DblGreenCard)] = 0
-
+	EVMap[fmt.Sprintf("%v-%v-%v-%v", 0, game.NumberRedCards, game.GreenCard, game.DblGreenCard)] = 0
 
 	cardsLeft := len(spentDeck)
 	spentRed := countSpentCards(spentDeck, game.RedCard)
@@ -39,7 +36,6 @@ func FindEv(count, stack int, spentDeck []game.Card) (ev float32) {
 	// Immediate EV of the next draw
 	ev = float32(-stack)*redProb + 1*greenProb + 2*dblGreenProb
 	// Recurse to find the value of drawing more cards from the deck if green
-	spentDeck = copy(spentDeck[])
 	FindEv(count+1, stack+1, spentDeck)
 	// Recurse to find the value of drawing more cards from the deck if double green
 
