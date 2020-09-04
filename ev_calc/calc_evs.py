@@ -119,17 +119,13 @@ def find_ev(bs: BoardState):
             + g_ev * green_probability
             + dg_ev * dbl_green_probability
         )
-        actual_ev = raw_ev + ev_diff
+        actual_ev = raw_ev - ev_diff
 
         print("bs added in FindEV", bs)
         ev_map[bs] = actual_ev
-    else:
-        print(f"bs in evmap ",bs)
 
 
-# build_constants()
-# for bs,ev in ev_map.items():
-# print(f"{bs}-{ev}")
+build_constants()
 
 for bs in ev_map.keys():
     ## Add score.position increase
