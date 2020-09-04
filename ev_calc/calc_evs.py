@@ -82,16 +82,12 @@ def find_ev(bs: BoardState):
     
         # Checks the EV of the future board state
         raw_ev = 0
+        r_ev = 0
+        g_ev = 0
+        dg_ev = 0
 
         if bs.spent_red != 12:
-            r_bs = BoardState(
-                    (bs.score[0], 0),
-                    bs.spent_red + 1,
-                    bs.spent_green,
-                    bs.spent_double_green,
-                    (bs.opponent_score[0], bs.opponent_score[1]),
-                )
-            raw_ev += -bs.score[1]* red_probability
+            r_ev = -bs.score[1]* red_probability
         if bs.spent_green != 25:
             g_bs = BoardState(
                 (bs.score[0], bs.score[1] + 1),
@@ -101,9 +97,9 @@ def find_ev(bs: BoardState):
                 (bs.opponent_score[0], bs.opponent_score[1]),
             )
             if g_bs.score[0] + g_bs.score[1] >= 17:
-                raw_ev += inf * green_probability
+                g_ev = inf * green_probability
             else:
-                raw_ev += ev_map[g_bs] * green_probability 
+                g_ev = ev_map[g_bs] * green_probability 
         if bs.spent_double_green != 14:
             dg_bs = BoardState(
                 (bs.score[0], bs.score[1] + 2),
@@ -113,20 +109,20 @@ def find_ev(bs: BoardState):
                 (bs.opponent_score[0], bs.opponent_score[1]),
             )
             if dg_bs.score[0] + dg_bs.score[1] >= 17:
-                raw_ev += inf * dbl_green_probability
+                dg_ev = inf * dbl_green_probability
             else:
-                raw_ev += ev_map[dg_bs] * dbl_green_probability
+                dg_ev = ev_map[dg_bs] * dbl_green_probability
 
         # Calc value of removing card from oppt
-     #   ev_diff = raw_ev - (
-            #ev_map[r_bs] * red_probability
-            #+ ev_map[g_bs] * green_probability
-            #+ ev_map[dg_bs] * dbl_green_probability
-        #)
-        #actual_ev = raw_ev + ev_diff
+        ev_diff = raw_ev - (
+            r_ev * red_probability
+            + g_ev * green_probability
+            + dg_ev * dbl_green_probability
+        )
+        actual_ev = raw_ev + ev_diff
 
         print("bs added in FindEV", bs)
-        ev_map[bs] = raw_ev
+        ev_map[bs] = actual_ev
     else:
         print(f"bs in evmap ",bs)
 
@@ -149,3 +145,6 @@ for bs in ev_map.keys():
         )
         find_ev(upper_bs)
         i += 1
+
+with open("./ev_map.pkl", "wb") as f:
+    pickle.dump(ev_map, f)
