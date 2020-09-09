@@ -1,21 +1,23 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/JordanDeBeer/redlight-greenlight/probabilities"
-)
-
-func main() {
-	if probabilities.PredictDraw(0, 0, 0, 0, 0) {
-		fmt.Println("draw")
-	} else {
-		fmt.Println("walk")
-	}
-}
+import "github.com/JordanDeBeer/redlight-greenlight/ev_calc"
 
 //func main() {
-//g := game.NewGame()
-////fmt.Printf("%+v\n", g)
-//localServer.NewLocalGame(*g)
+//	var possibleScores [][2]int
+//	var x int = 0
+//	var y int = 0
+//	for x+y < 16 {
+//		y++
+//		possibleScores = append(possibleScores, [2]int{x, y})
+//		if x+y == 16 {
+//			y = 0
+//			x++
+//		}
+//
+//	}
+//	fmt.Println(possibleScores)
 //}
+
+func main() {
+	ev_calc.FindEv(ev_calc.BoardState{0, 0, 0, 0, 0, 0})
+}

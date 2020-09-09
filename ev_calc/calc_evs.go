@@ -20,6 +20,11 @@ type BoardState struct {
 	OpponentBoardPosition int
 }
 
+func init() {
+	EvMap = make(map[BoardState]float32)
+
+}
+
 func isBsConstant(bs BoardState) bool {
 	// If there are no red cards left and drawing would result in a win
 	scoreNeeded := 17 - bs.BoardPosition + bs.Stack
@@ -32,15 +37,22 @@ func isBsConstant(bs BoardState) bool {
 		EvMap[bs] = 0
 		return true
 	}
+	// Constant for only red cards left and not at the start of your turn
+	if bs.Stack != 0 && bs.SpentGreen == 25 && bs.SpentDoubleGreen == 14 {
+		if game.NumberRedCards-bs.SpentRed%2 == 0 {
+			EvMap[bs] = -FindEv(BoardState{bs.BoardPosition})
+
+		}
+
+	}
 	return false
 
 }
 
-// Todo:
-
 // FindEv finds the estimated value for a board state
 func FindEv(bs BoardState) (ev float32) {
-	cardsLeft := game.TotalCards - bs.SpentRed - bs.SpentGreen - bs.SpentDoubleGreen
+	fmt.Println("bs: ", bs)
+	cardsLeft := game.TotalCards - (bs.SpentRed + bs.SpentGreen + bs.SpentDoubleGreen)
 
 	// If there are zero cards left, we "reshuffle" the deck.
 	if cardsLeft == 0 {
@@ -61,12 +73,20 @@ func FindEv(bs BoardState) (ev float32) {
 		greenRecurseEv = FindEv(BoardState{bs.BoardPosition, bs.Stack + 1, 0, 0, 0, bs.OpponentBoardPosition})
 		doubleGreenRecurseEv = FindEv(BoardState{bs.BoardPosition, bs.Stack + 2, 0, 0, 0, bs.OpponentBoardPosition})
 	} else {
-		greenRecurseEv = FindEv(BoardState{bs.BoardPosition, bs.Stack + 1, bs.SpentRed, bs.SpentGreen + 1, bs.SpentDoubleGreen, bs.OpponentBoardPosition})
-		doubleGreenRecurseEv = FindEv(BoardState{bs.BoardPosition, bs.Stack + 2, bs.SpentRed, bs.SpentGreen, bs.SpentDoubleGreen + 1, bs.OpponentBoardPosition})
+		if game.NumberGreenCards-bs.SpentGreen == 0 {
+			greenRecurseEv = FindEv(BoardState{bs.BoardPosition, bs.Stack + 1, bs.SpentRed, bs.SpentGreen, bs.SpentDoubleGreen, bs.OpponentBoardPosition})
+		} else {
+			greenRecurseEv = FindEv(BoardState{bs.BoardPosition, bs.Stack + 1, bs.SpentRed, bs.SpentGreen + 1, bs.SpentDoubleGreen, bs.OpponentBoardPosition})
+		}
+		if game.NumberDoubleGreenCards-bs.SpentDoubleGreen == 0 {
+			doubleGreenRecurseEv = FindEv(BoardState{bs.BoardPosition, bs.Stack + 2, bs.SpentRed, bs.SpentGreen, bs.SpentDoubleGreen, bs.OpponentBoardPosition})
+		} else {
+			doubleGreenRecurseEv = FindEv(BoardState{bs.BoardPosition, bs.Stack + 2, bs.SpentRed, bs.SpentGreen, bs.SpentDoubleGreen + 1, bs.OpponentBoardPosition})
+		}
 	}
 	ev = float32(-bs.Stack)*redProb + greenRecurseEv*greenProb + doubleGreenRecurseEv*doubleGreenProb
 
 	EvMap[bs] = ev
-	fmt.Println("Found bs: ", bs)
+	fmt.Printf("%v:%v\n", bs, EvMap[bs])
 	return ev
 }

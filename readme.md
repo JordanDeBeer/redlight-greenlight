@@ -15,3 +15,11 @@ Score to win: 17
 question: on average, how many cards can you draw before getting a red card?
 or 
 what is the average value of one draw?
+
+possible deck states:
+[jordan@x1c ev_calc]$ ./calc_evs.py | wc -l
+95,764,200
+
+9,255,947
+
+9,309,565
